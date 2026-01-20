@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  kafka:
+    image: apache/kafka:4.1.0
+    ports:
+      - "9092:9092"
+    environment:
+      # KRaft 설정
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+
+      # 컨트롤러 (단일 노드)
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # 브로커 + 컨트롤러 리스너
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+
+      # 클라이언트에게 알려줄 주소
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092

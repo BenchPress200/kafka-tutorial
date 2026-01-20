@@ -1,0 +1,13 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092 # Kafka 클러스터에 처음 접속할 주소
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    consumer:
+      group-id: sample-group # 해당 Consumer가 속한 컨슈머 그룹 이름
+      auto-offset-reset: earliest # 이 group-id에 offset이 없을 때 처음부터 메시지 소비
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
