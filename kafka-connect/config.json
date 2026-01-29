@@ -1,0 +1,31 @@
+{
+  "name": "mysql-source-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.server.id": "1",
+    "database.hostname": "host.docker.internal",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "1234",
+    "database.server.name": "mysql",
+    "database.connectionTimeZone": "Asia/Seoul",
+    "table.include.list": "test.posts",
+    "include.schema.changes": "false",
+
+    "topic.prefix": "mysql",
+
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9094",
+    "schema.history.internal.kafka.topic": "schema-history.mysql",
+
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter.schemas.enable": "false",
+
+    "transforms": "unwrap,route",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.route.type": "io.debezium.transforms.ByLogicalTableRouter",
+    "transforms.route.topic.regex": "(.*)",
+    "transforms.route.topic.replacement": "post"
+  }
+}

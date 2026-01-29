@@ -2,6 +2,7 @@ version: '3.8'
 services:
   kafka:
     image: apache/kafka:4.1.0
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
@@ -13,13 +14,48 @@ services:
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
 
-      # 브로커 + 컨트롤러 리스너
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-
-      # 클라이언트에게 알려줄 주소
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9094,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9094,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
 
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8090:8090"
+    environment:
+      - SERVER_PORT=8090
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9094
+
+  connect:
+    image: debezium/connect:2.7.3.Final
+    container_name: kafka-connect
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083" # Kafka Connect REST API
+    environment:
+      # Kafka 연결
+      BOOTSTRAP_SERVERS: kafka:9094
+
+      # Connect 클러스터 설정
+      GROUP_ID: connect-cluster
+
+      # 내부 토픽 (자동 생성됨)
+      CONFIG_STORAGE_TOPIC: connect-configs
+      OFFSET_STORAGE_TOPIC: connect-offsets
+      STATUS_STORAGE_TOPIC: connect-status
+
+      # Converter 설정 (Debezium 기본)
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+      # 플러그인 경로
+      PLUGIN_PATH: /kafka/connect

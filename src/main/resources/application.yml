@@ -1,4 +1,15 @@
 spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/test
+    username: root
+    password: 1234
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create
+
   kafka:
     bootstrap-servers: localhost:9092 # Kafka 클러스터에 처음 접속할 주소
 
@@ -8,8 +19,6 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
 
-
-
     consumer:
       group-id: sample-group # 해당 Consumer가 속한 컨슈머 그룹 이름
       auto-offset-reset: earliest # 이 group-id에 offset이 없을 때 처음부터 메시지 소비
@@ -17,6 +26,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
 
       properties:
+        spring.json.value.default.type: com.benchpress200.kafkatutorial.dto.PostCreateEvent
         spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "*"
